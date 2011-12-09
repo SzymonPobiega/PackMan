@@ -51,8 +51,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CreatePackageAction.cs" />
+    <Compile Include="IAction.cs" />
+    <Compile Include="OptionSetExtensions.cs" />
+    <Compile Include="PackageBuilder.cs" />
+    <Compile Include="PackManException.cs" />
+    <Compile Include="PrintHelpAction.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PackageSigner.cs" />
+    <Compile Include="UnpackPackageAction.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -1,43 +1,66 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Ionic.Zip;
 using NDesk.Options;
 
 namespace PackMan
 {
-    
     class Program
     {
         static void Main(string[] args)
         {
-            var printHelp = false;
-            var optionSet = new OptionSet()
-                .Add("h|?|help", "Print this help information", x =>
-                                                               {
-                                                                   printHelp = x != null;
-                                                               });
-
-            var result = optionSet.Parse(args);
-
-            if (printHelp)
+            try
             {
-                Console.WriteLine("Usage: packman.exe [-h]");
-                Console.WriteLine("Available options:");
-                optionSet.WriteOptionDescriptions(Console.Out);
+                var createPackage = new CreatePackageAction();
+                var printHelp = new PrintHelpAction();
+
+                IAction selectedAction = printHelp;
+
+                var optionSet = new OptionSet()
+                    .Add("h|?|help", "Print this help information", x => selectedAction = printHelp)
+                    .Add("a|action=", "Action to be performed (pack/unpack)",
+                         delegate(string x)
+                             {
+                                 switch (x.ToLowerInvariant())
+                                 {
+                                     case "create":
+                                         selectedAction = createPackage;
+                                         break;
+                                     default:
+                                         selectedAction = printHelp;
+                                         break;
+                                 }
+                             })
+                    .AddFromAction(createPackage);
+
+                optionSet.Parse(args);
+                selectedAction.Perform(optionSet);
+                Console.ReadLine();
             }
+            catch (PackManException ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+                Environment.Exit(1);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+                Environment.Exit(1);
+            }
+            
+        }
 
-            Console.ReadLine();
-
-            //var packageBytes = BuildPackage(args);
-
-            //var hash = ComputeHash(packageBytes);
-
-            //var signature = Sign(hash, args);
-
-            //WritePackage(args, packageBytes);
-            //WriteSignature(args, signature);
+        private static bool NotEnoughData(IEnumerable<string> includes, string outputFileName)
+        {
+            return !includes.Any() || string.IsNullOrEmpty(outputFileName);
         }
     }
 }
