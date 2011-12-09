@@ -9,20 +9,26 @@ namespace PackMan
     {
         public static void Sign(string cn, string outputFileName)
         {
-            var myStore = OpenCertificateStore();
-            var certificate = FindSingleMatchingCertificate(myStore, cn);
-            var cryptoServiceProvider = (RSACryptoServiceProvider) certificate.PrivateKey;
+            var cryptoServiceProvider = GetAlgorithmForCertificateByCN(cn);
+
             var signature = ComputeSignature(outputFileName, cryptoServiceProvider);
             WriteSignature(outputFileName, signature);
         }
 
         public static bool VerifySignature(string cn, string packageFileName)
         {
+            var cryptoServiceProvider = GetAlgorithmForCertificateByCN(cn);
+
+            var data = ReadPackage(packageFileName);
+            var signature = ReadSignature(packageFileName);
+            return cryptoServiceProvider.VerifyData(data, CreateHashAlgorithm(), signature); 
+        }
+
+        private static RSACryptoServiceProvider GetAlgorithmForCertificateByCN(string cn)
+        {
             var myStore = OpenCertificateStore();
             var certificate = FindSingleMatchingCertificate(myStore, cn);
-            var cryptoServiceProvider = (RSACryptoServiceProvider)certificate.PrivateKey;
-            var signature = ComputeSignature(outputFileName, cryptoServiceProvider);
-            WriteSignature(outputFileName, signature);
+            return (RSACryptoServiceProvider)certificate.PrivateKey;
         }
 
         private static byte[] ComputeSignature(string outputFileName, RSACryptoServiceProvider cryptoServiceProvider)
@@ -30,9 +36,14 @@ namespace PackMan
             byte[] signature;
             using( var packageFileStream = new FileStream(outputFileName, FileMode.Open))
             {
-                signature = cryptoServiceProvider.SignData(packageFileStream, new SHA1CryptoServiceProvider());
+                signature = cryptoServiceProvider.SignData(packageFileStream, CreateHashAlgorithm());
             }
             return signature;
+        }
+
+        private static SHA1CryptoServiceProvider CreateHashAlgorithm()
+        {
+            return new SHA1CryptoServiceProvider();
         }
 
         private static X509Store OpenCertificateStore()
@@ -64,6 +75,11 @@ namespace PackMan
                 signatureFileStream.Write(signature, 0, signature.Length);
                 signatureFileStream.Flush();
             }
+        }
+
+        private static byte[] ReadPackage(string packageFileName)
+        {
+            return File.ReadAllBytes(packageFileName);
         }
 
         private static byte[] ReadSignature(string packageFileName)
