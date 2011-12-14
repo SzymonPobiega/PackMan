@@ -41,18 +41,15 @@ namespace PackMan
 
                 optionSet.Parse(args);
                 selectedAction.Perform(optionSet);
-                Console.ReadLine();
             }
             catch (PackManException ex)
             {
                 Console.WriteLine(ex.Message);
-                throw;
                 Environment.Exit(1);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                throw;
                 Environment.Exit(1);
             }
             

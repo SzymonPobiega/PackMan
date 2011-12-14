@@ -69,7 +69,7 @@ namespace PackMan
 
         private static void WriteSignature(string outputFileName, byte[] signature)
         {
-            var signatureFileName = Path.GetFileNameWithoutExtension(outputFileName) + ".signature";
+            var signatureFileName = Path.ChangeExtension(outputFileName, ".signature");
             using (var signatureFileStream = new FileStream(signatureFileName,FileMode.Create))
             {
                 signatureFileStream.Write(signature, 0, signature.Length);
