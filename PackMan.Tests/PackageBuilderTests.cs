@@ -15,7 +15,7 @@ namespace PackMan.Tests
             File.Create(@"Dir\a.txt").Close();
             File.Create(@"Dir\b.txt").Close();
             PackageBuilder.BuildPackage(new[] { "p:*.txt" }, "package.zip");
-            PackageBuilder.Unpack("package.zip");
+            PackageBuilder.Unpack("package.zip", "package");
 
             Assert.IsTrue(Directory.Exists("package"));
             Assert.IsTrue(File.Exists(@"package\Dir\a.txt"));
@@ -32,7 +32,7 @@ namespace PackMan.Tests
             File.Create(@"Dir\Subdir\b.txt").Close();
 
             PackageBuilder.BuildPackage(new[] { "d:Dir" }, "package.zip");
-            PackageBuilder.Unpack("package.zip");
+            PackageBuilder.Unpack("package.zip", "package");
 
             Assert.IsTrue(Directory.Exists("package"));
             Assert.IsTrue(File.Exists(@"package\a.txt"));
@@ -47,7 +47,7 @@ namespace PackMan.Tests
             File.Create(@"Dir ectory\a.txt").Close();
 
             PackageBuilder.BuildPackage(new[] { @"d:Dir ectory" }, "package.zip");
-            PackageBuilder.Unpack("package.zip");
+            PackageBuilder.Unpack("package.zip", "package");
 
             Assert.IsTrue(Directory.Exists("package"));
             Assert.IsTrue(File.Exists(@"package\a.txt"));
@@ -61,7 +61,7 @@ namespace PackMan.Tests
             File.Create(@"Dir\a.txt").Close();
             File.Create(@"Dir\b.txt").Close();
             PackageBuilder.BuildPackage(new[] { "p:Dir"}, "package.zip");
-            PackageBuilder.Unpack("package.zip");
+            PackageBuilder.Unpack("package.zip", "package");
 
             Assert.IsTrue(Directory.Exists("package"));
             Assert.IsTrue(File.Exists(@"package\Dir\a.txt"));

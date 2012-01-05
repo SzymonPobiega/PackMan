@@ -37,13 +37,13 @@ namespace PackMan
             }
         }
 
-        public static void Unpack(string packageFileName)
+        public static void Unpack(string packageFileName, string destinationDirectory)
         {
             using (var zipFile = ZipFile.Read(packageFileName))
             {
                 var packageDir = Path.GetFileNameWithoutExtension(packageFileName);
                 File.Delete(packageDir);
-                zipFile.ExtractAll(packageDir);
+                zipFile.ExtractAll(destinationDirectory);
             }
         }
     }

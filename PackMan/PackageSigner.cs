@@ -9,24 +9,28 @@ namespace PackMan
     {
         public static void Sign(string cn, string outputFileName)
         {
-            var cryptoServiceProvider = GetAlgorithmForCertificateByCN(cn);
+            var cryptoServiceProvider = GetAlgorithmForCertificateByCN(cn, StoreLocation.CurrentUser);
 
             var signature = ComputeSignature(outputFileName, cryptoServiceProvider);
             WriteSignature(outputFileName, signature);
         }
 
-        public static bool VerifySignature(string cn, string packageFileName)
+        public static bool VerifySignature(string cn, string packageFileName, StoreLocation storeLocation)
         {
-            var cryptoServiceProvider = GetAlgorithmForCertificateByCN(cn);
-
-            var data = ReadPackage(packageFileName);
+            var cryptoServiceProvider = GetAlgorithmForCertificateByCN(cn, storeLocation);
+            var hashAlgotithm = CreateHashAlgorithm();
+            byte[] hash;
+            using( var packageFileStream = new FileStream(packageFileName, FileMode.Open))
+            {
+                hash = hashAlgotithm.ComputeHash(packageFileStream);
+            }
             var signature = ReadSignature(packageFileName);
-            return cryptoServiceProvider.VerifyData(data, CreateHashAlgorithm(), signature); 
+            return cryptoServiceProvider.VerifyHash(hash, CryptoConfig.MapNameToOID("SHA1"), signature);
         }
 
-        private static RSACryptoServiceProvider GetAlgorithmForCertificateByCN(string cn)
+        private static RSACryptoServiceProvider GetAlgorithmForCertificateByCN(string cn, StoreLocation storeLocation)
         {
-            var myStore = OpenCertificateStore();
+            var myStore = OpenCertificateStore(storeLocation);
             var certificate = FindSingleMatchingCertificate(myStore, cn);
             return (RSACryptoServiceProvider)certificate.PrivateKey;
         }
@@ -46,9 +50,9 @@ namespace PackMan
             return new SHA1CryptoServiceProvider();
         }
 
-        private static X509Store OpenCertificateStore()
+        private static X509Store OpenCertificateStore(StoreLocation storeLocation)
         {
-            var myStore = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+            var myStore = new X509Store(StoreName.My, storeLocation);
             myStore.Open(OpenFlags.ReadOnly);
             return myStore;
         }
@@ -77,14 +81,9 @@ namespace PackMan
             }
         }
 
-        private static byte[] ReadPackage(string packageFileName)
-        {
-            return File.ReadAllBytes(packageFileName);
-        }
-
         private static byte[] ReadSignature(string packageFileName)
         {
-            var signatureFileName = Path.GetFileNameWithoutExtension(packageFileName) + ".signature";
+            var signatureFileName = Path.ChangeExtension(packageFileName, ".signature");
             return File.ReadAllBytes(signatureFileName);
         }
     }

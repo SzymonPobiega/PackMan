@@ -1,4 +1,5 @@
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using NUnit.Framework;
 
 // ReSharper disable InconsistentNaming
@@ -17,7 +18,7 @@ namespace PackMan.Tests
                 file.Flush();
             }
             PackageSigner.Sign("PackManTest", "a.txt");
-            var result = PackageSigner.VerifySignature("PackManTest", "a.txt");
+            var result = PackageSigner.VerifySignature("PackManTest", "a.txt", StoreLocation.CurrentUser);
             Assert.IsTrue(result);
         }
 

@@ -10,12 +10,13 @@ namespace PackMan
         private string _outputFileName;
         private string _cn;
 
-        public void Perform(OptionSet optionSet)
+        public int Perform(OptionSet optionSet)
         {
             PackageBuilder.BuildPackage(_includes, _outputFileName);
             PackageSigner.Sign(_cn, _outputFileName);
 
             Console.WriteLine("Created package {0}", _outputFileName);
+            return 0;
         }
 
         public bool VerifyParamaters()

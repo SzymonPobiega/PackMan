@@ -4,7 +4,7 @@ namespace PackMan
 {
     public interface IAction
     {
-        void Perform(OptionSet optionSet);
+        int Perform(OptionSet optionSet);
         bool VerifyParamaters();
         void BindCommadLineParameters(OptionSet optionSet);
     }

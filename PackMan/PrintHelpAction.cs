@@ -5,9 +5,10 @@ namespace PackMan
 {
     public class PrintHelpAction : IAction
     {
-        public void Perform(OptionSet optionSet)
+        public int Perform(OptionSet optionSet)
         {
             optionSet.WriteOptionDescriptions(Console.Out);
+            return 0;
         }
 
         public bool VerifyParamaters()

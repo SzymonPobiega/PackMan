@@ -18,6 +18,7 @@ namespace PackMan
             try
             {
                 var createPackage = new CreatePackageAction();
+                var unpackPackage = new UnpackPackageAction();
                 var printHelp = new PrintHelpAction();
 
                 IAction selectedAction = printHelp;
@@ -29,18 +30,23 @@ namespace PackMan
                              {
                                  switch (x.ToLowerInvariant())
                                  {
-                                     case "create":
+                                     case "pack":
                                          selectedAction = createPackage;
+                                         break;
+                                     case "unpack":
+                                         selectedAction = unpackPackage;
                                          break;
                                      default:
                                          selectedAction = printHelp;
                                          break;
                                  }
                              })
-                    .AddFromAction(createPackage);
+                    .AddFromAction(createPackage)
+                    .AddFromAction(unpackPackage);
 
                 optionSet.Parse(args);
-                selectedAction.Perform(optionSet);
+                var result = selectedAction.Perform(optionSet);
+                Environment.Exit(result);
             }
             catch (PackManException ex)
             {
