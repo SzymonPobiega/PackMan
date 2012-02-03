@@ -9,15 +9,16 @@ namespace PackMan
     {
         public static void Sign(string cn, string outputFileName)
         {
-            var cryptoServiceProvider = GetAlgorithmForCertificateByCN(cn, StoreLocation.CurrentUser);
-
-            var signature = ComputeSignature(outputFileName, cryptoServiceProvider);
+            var certificate = GetAlgorithmForCertificateByCN(cn, StoreLocation.CurrentUser);
+            var cryptoProvider = (RSACryptoServiceProvider) certificate.PrivateKey;
+            var signature = ComputeSignature(outputFileName, cryptoProvider);
             WriteSignature(outputFileName, signature);
         }
 
         public static bool VerifySignature(string cn, string packageFileName, StoreLocation storeLocation)
         {
-            var cryptoServiceProvider = GetAlgorithmForCertificateByCN(cn, storeLocation);
+            var certificate = GetAlgorithmForCertificateByCN(cn, storeLocation);
+            var cryptoProvider = (RSACryptoServiceProvider) certificate.PublicKey.Key;
             var hashAlgotithm = CreateHashAlgorithm();
             byte[] hash;
             using( var packageFileStream = new FileStream(packageFileName, FileMode.Open))
@@ -25,14 +26,14 @@ namespace PackMan
                 hash = hashAlgotithm.ComputeHash(packageFileStream);
             }
             var signature = ReadSignature(packageFileName);
-            return cryptoServiceProvider.VerifyHash(hash, CryptoConfig.MapNameToOID("SHA1"), signature);
+            return cryptoProvider.VerifyHash(hash, CryptoConfig.MapNameToOID("SHA1"), signature);
         }
 
-        private static RSACryptoServiceProvider GetAlgorithmForCertificateByCN(string cn, StoreLocation storeLocation)
+        private static X509Certificate2 GetAlgorithmForCertificateByCN(string cn, StoreLocation storeLocation)
         {
             var myStore = OpenCertificateStore(storeLocation);
             var certificate = FindSingleMatchingCertificate(myStore, cn);
-            return (RSACryptoServiceProvider)certificate.PrivateKey;
+            return certificate;
         }
 
         private static byte[] ComputeSignature(string outputFileName, RSACryptoServiceProvider cryptoServiceProvider)
